@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" type="text/css" href="bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="index.css">
+</head>
+<body>
+	<div id="container">
+		<div class="row">
+			<div class="col-md-4">
+				<div class="panel panel-primary" id="coins-set">
+					<div class="panel-heading">
+						<h3 class="panel-title">设置</h3>
+					</div>
+					<div class="panel-body">
+						<h5>面值设置：</h5>
+						<hr />
+						<div class="row" id="coins">
+							<div class="col-sm-2">
+								<input type="text" name="coins[]" class="form-control input-sm" value="1">
+							</div>
+							<div class="col-sm-2">
+								<input type="text" name="coins[]" class="form-control input-sm" value="5">
+							</div>
+							<div class="col-sm-2">
+								<input type="text" name="coins[]" class="form-control input-sm" value="10">
+							</div>
+							<div class="col-sm-2">
+								<input type="text" name="coins[]" class="form-control input-sm" value="20">
+							</div>
+							<div class="col-sm-2">
+								<input type="text" name="coins[]" class="form-control input-sm" value="50">
+							</div>
+							<div class="col-sm-2">
+								<input type="hidden" name="coins[]" class="form-control input-sm" value="100">
+							</div>
+							<!-- <div class="col-sm-2">
+								<span class="btn btn-default btn-sm">＋</span>
+							</div> -->
+						</div>
+						<hr />
+						<div class="form-horizontal">
+							<div class="form-group">
+								<label for="amount" class="col-sm-4 control-label">数额设置：</label>
+								<div class="col-sm-3">
+									<input type="text" class="form-control" id="amount" value="100">
+								</div>
+
+							</div>
+							<span class="text-muted">注：输入100，则计算1~99这些数字的组成方式</span>
+						</div>
+						<input type="button" class="btn btn-default pull-right" value="计算" id="calculate">
+					</div>
+				</div>
+				<div class="panel panel-primary" id="statistics">
+					<div class="panel-heading">
+						<h3 class="panel-title">统计结果</h3>
+					</div>
+					<div class="panel-body">
+						<div id="statistics-display">
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-6">
+				<div class="panel panel-primary" id="result">
+					<div class="panel-heading">
+						<h3 class="panel-title">计算结果</h3>
+					</div>
+					<div class="panel-body">
+						<span class="text-muted">1.解释：在有找钱环节中，如有：28=30(20,10) - 2(1,1)，表示28这个数额可以这样操作，给出30元别人找回2元，括号内表示组成30元需要1张20元和1张10元。以此内推。</span>
+						<br />
+						<span class="text-muted">2.组成项空白表示无找钱情况下，钱的张数已经是最优的了。</span>
+						<div id="result-display">
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>
+
+<script type="text/javascript" src="jquery-2.1.0.min.js"></script>
+<script type="text/javascript" src="index.js"></script>

@@ -1,0 +1,105 @@
+html,body{
+	background: #FED54A;
+	height: 100%;
+	width: 100%;
+	margin:0;
+	padding:0;
+	position: relative;
+	-webkit-user-select:​ none;
+}
+.bg-img{
+	background-size: contain;
+	background-position: 50% 0;
+	background-repeat: no-repeat;
+	font-size: 0;
+	position: absolute;
+}
+#game-start{
+	display: none;
+	.title{
+		width: 28rem;
+		height: 10rem;
+		top: 3rem;
+		left: 2rem;
+		background-image: url(img/title.png);
+	}
+	.author{
+		width: 15rem;
+		height: 5rem;
+		top: 13rem;
+		left: 8rem;
+		background-image: url(img/author.png);
+	}
+	.dog{
+		bottom: 0;
+		left: 0;
+		width: 28rem;
+		height: 28rem;
+		background-image: url(img/start_big_img.png);
+	}
+	.begin-btn{
+		right: 1rem;
+		bottom: 10rem;
+		width: 5rem;
+		height: 10rem;
+		background-image: url(img/begin_btn.png);
+	}
+	.painter{
+		right: 1rem;
+		bottom: 1rem;
+		width: 8rem;
+		height: 2rem;
+		background-image: url(img/draw_author.png);
+	}
+}
+
+#game-runing{
+	width: 100%;
+	height: 100%;
+	background-color: #000;
+	.game-container{
+		-webkit-box-sizing: border-box;
+		height: 100%;
+		width: 100%;
+		padding-bottom: 10rem;
+		position: relative;
+	}
+	.game-main{
+		height: 100%;
+		width: 100%;
+		position: relative;
+		overflow: hidden;
+		.animate{
+			-webkit-transition:-webkit-transform .1s linear;
+		}
+		.block1,.block2{
+			position: absolute;
+			height: 100%;
+			width: 100%;
+			left: 0;
+			bottom:0;
+		}
+		.row{
+			width: 100%;
+			height: 33.3%;
+			float: left;
+		}
+		.col{
+			float: left;
+			width: 7.6rem;
+			height: 100%;
+			border: solid 0.2rem #000;
+			background: url(img/step_before.png) 0 100% no-repeat #D1D1D1;
+			background-size: contain;
+			&.safe{
+				background: #FED54A;
+			}
+		}
+	}
+	.logo{
+		bottom: 0;
+		width: 32rem;
+		height: 10rem;
+		background-image: url(img/logo.png);
+	}
+}

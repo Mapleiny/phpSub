@@ -1,0 +1,33 @@
+﻿<?
+	if(isset($_GET['jump'])){
+		header("Location: ".$_GET['jump']);
+		exit;
+	}
+?>
+<html>
+<head>
+	<title>Mapleiny's trick</title>
+	<meta content="text/html; charset=utf-8">
+</head>
+<body>
+<label for="img-url">imgUrl:</label><input type="text" id="img-url">
+<label for="link">lick:</label><input type="text" id="link">
+<label for="title">title:</label><input type="text" id="title">
+<label for="desc">desc:</label><input type="text" id="desc">
+
+</body>
+<script type="text/javascript">
+document.addEventListener("WeixinJSBridgeReady", function() {
+	WeixinJSBridge && WeixinJSBridge.on("menu:share:timeline", function() {
+		WeixinJSBridge.invoke("shareTimeline", {
+			img_url: 'http://images.1758.com/images/wxicon.png',
+			img_width:"640",
+			img_height: "640",
+			link: 'http://mapledemo.duapp.com/game/?jump=http://www.1758.com/hlmy/yanse2.htm',
+			desc: "找出所有色块中颜色不同的一块。分享朋友圈，找到身边的色魔",
+			title: '我闯过125关，击败100%的人！我是【孤独求色】！不服来战！'
+		}, function(){});
+	});
+});
+</script>
+</html>

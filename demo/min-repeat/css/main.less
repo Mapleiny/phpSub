@@ -1,0 +1,82 @@
+html,body{
+	height: 100%;
+}
+.container{
+	min-width: 800px;
+	height: 100%;
+	position: relative;
+}
+.create-area{
+	padding-top: 5%;
+	height: 80%;
+	.file-capture{
+		margin: 0 auto;
+		width: 800px;
+		height: 300px;
+		border:dashed 3px #ccc;
+		border-radius: 5px;
+		position: relative;
+		text-align: center;
+		-webkit-transition:border .5s;
+		display: table;
+		&.hover{
+			border-color:#333;
+			.file-select-btn{
+				opacity: 0;
+			}
+		}
+		.wrap{
+			width: 100%;
+			display:table-cell;
+			vertical-align: middle;
+		}
+		.info{
+			color:#999;
+			font-size: 20px;
+		}
+		.file-select-btn{
+			margin-top: 10px;
+		}
+		.file-select-input{
+			display: none;
+		}
+	}
+}
+
+.opration-area{
+	padding-top: 80px;
+	position: relative;
+	display: none;
+	.img-conrainer{
+		position: relative;
+		height: 80%;
+		width: 70%;
+		overflow: hidden;
+		margin: 0 auto
+	}
+	.min-select{
+		position: absolute;
+		cursor: move;
+		-webkit-user-select:none;
+		&>div{
+			background: rgba(0,0,0,0.5);
+			position: absolute;
+		}
+	}
+	.select-area{
+		overflow: hidden;
+	}
+	.select-preview{
+		overflow: hidden;
+		margin: 0 auto 10px;
+	}
+}
+
+.loading{
+	position: absolute;
+	width: 300px;
+	top: 30%;
+	left: 50%;
+	margin-left: -150px;
+	display: none;
+}
