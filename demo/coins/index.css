@@ -1,0 +1,11 @@
+#coins input{
+    text-align: center;
+}
+
+#result-display{
+    min-height: 300px;
+}
+table th,table,td{
+	text-align: center;
+	vertical-align: middle;
+}

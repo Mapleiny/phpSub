@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title></title>
+	<style>
+		body{
+			-webkit-user-select: none;
+			font-family: "微软雅黑";
+		}
+		ul{
+			list-style: none;
+			margin: 0;
+			padding: 0;
+		}
+		.container{
+			width: 900px;
+			margin: 0 auto;
+			position: relative;
+		}
+		.row{
+			text-align: center;
+		}
+
+		.row > li{
+			margin: 5px 0;
+		}
+
+		.line > li{
+			display:inline-block;
+			width: 50px;
+			margin: 0 5px;
+			padding: 2px 0;
+			border: solid 1px #9DD26A;
+			background: #fff;
+			cursor: default;
+			border-radius: 5px;
+		}
+
+		.line > li.active{
+			border-color: #9DD26A;
+			background: #9DD26A;
+			cursor: pointer;
+		}
+
+		.line > li.option{
+			border-color: #DBF0C9;
+			background: #DBF0C9;
+			cursor: pointer;
+		}
+
+		#sum{
+			position: absolute;
+			left: 0px;
+			top: 0px;
+		}
+		#info p{
+			font-size: 12px;
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<div id="data"></div>
+		<div id="sum">
+			<p>
+				<span>已选数字和：</span>
+				<span class="cur-sum"></span>
+			</p>
+			<p>
+				<span>参考最大和：</span>
+				<span class="fin-sum"></span>
+			</p>
+		</div>
+		<div id="info">
+			<p>1、直接点击浅色选择数字</p>
+			<p>2、点击深绿色可以从该位置开始从新选择</p>
+			<p>3、右侧数字分别代表你已选数字的和，整个选完的最大数字和（仅供参考）</p>
+			<p>4、别天真的不停的来点击试答案了，交给机器来做吧，前提是你告诉机器怎么做。</p>
+			<p>5、我自己的实现想法在源代码里面了，仅供参考。</p>
+		</div>
+	</div>
+
+	<script type="text/javascript" src="jquery-2.0.min.js"></script>
+	<script type="text/javascript">
+		var line , row , sum , all ,
+			tempHTML = [], temp , data = [];
+			random = function(){return Math.round(Math.random()*100+100);};
+		tempHTML.push('<ul class="row">');
+		var i = 0;
+		for( row = 0 , sum = 12 ; row < sum ; ++row ){
+			tempHTML.push('<li><ul class="line">')
+			for( line = 0 , all = row+1 ; line < all ; ++line ){
+				temp = random();
+				data.push(temp)
+				tempHTML.push('<li data-index="'+ (i++) +'" data-line="'+ line +'" data-row="'+ row +'" data-value="'+ temp +'">'+ temp +'</li>');
+			}
+			tempHTML.push('</ul></li>');
+		}
+		tempHTML.push('</ul>');
+		$('#data').html( tempHTML.join('') );
+		$('#sum .cur-sum').html( data[0] );
+
+		allLi = $('.line > li');
+
+		var array2number = function( arr ){
+			var row = arr[0],
+				line = arr[1];
+			return ( row * ( row + 1 ) ) / 2 + line;
+		},number2array = function( num ){
+		},setClass = function( className , option ){
+			if( option === 'add' ){
+				option = 'addClass';
+			}else{
+				option = 'removeClass'
+			}
+			return function(){
+				var number , i , sum;
+				for( i = 0 , sum = arguments.length ; i < sum ; ++i ){
+					if( typeof arguments[i] === 'number' ){
+						number = arguments[i];
+					}else if( arguments[i] instanceof Array ){
+						number = array2number( arguments[i] );
+					}
+					allLi.eq(number)[option]( className );
+				}
+			}
+		},addActive = setClass('active','add'),
+		addOption = setClass('option','add'),
+		removeActive = setClass('active','remove'),
+		removeOption = setClass('option','remove'),
+		clickControl = (function(){
+			var activeList = [{"row":0,"line":0,"index":0}];
+			return function( params ){
+				var current = activeList[activeList.length-1];
+				
+				if( current.row == params.row-1 && ( current.line == params.line || current.line+1 == params.line ) ){
+					activeList.push({"row":params.row,"line":params.line,"index":params.index,"value":params.value});
+					return {"message" : "addActive"};
+				}else if( params.row < activeList.length - 1 && activeList[params.row].line == params.line ){
+					var temp = [];
+
+					while( params.row !== activeList.length - 1 ){
+						temp.push(activeList.pop());
+					}
+
+					return {"message":'removeActive',"value":temp };
+				}else{
+					return {"message" : false};
+				}
+			};
+		})(),setValue = function( elem , option ){
+			if( option === 'add' ){
+				return function( value ){
+					elem.html( +elem.html() + value );
+				};
+			}else{
+				return function( value ){
+					elem.html( +elem.html() - value );
+				}
+			};
+		},addValue = setValue( $('#sum').find('.cur-sum') , 'add' ),
+		reduceValue = setValue( $('#sum').find('.cur-sum') );
+
+		addActive(0);
+		addOption(1,2);
+
+		$('#data').on('click','.line>li',function(event){
+			var data = $(this).data(),
+				action = clickControl( data ),
+				i ,sum ;
+
+			if( action.message === 'addActive' ){
+				addActive( data.index );
+				removeOption( data.index , data.index - 1 , data.index + 1 );
+				addOption( data.index + data.row + 1 , data.index + data.row + 2 );
+				addValue( data.value );
+			}else if( action.message === 'removeActive' ){
+				removeOption( action.value[0].index + action.value[0].row + 1 , action.value[0].index + action.value[0].row + 2 );
+				for( i = 0 , sum = action.value.length ; i < sum ; ++i ){
+					removeActive( action.value[i].index );
+					reduceValue( action.value[i].value );
+				}
+				addOption( data.index + data.row + 1 , data.index + data.row + 2 );
+			}
+		});
+
+		// 我所想到的实现算法，仅供参考
+		var line = 12,
+			max = function( a , b , arr ){
+				return arr[a] > arr[b] ? arr[a] : arr[b];
+			},beginIndex = data.length;
+		
+		console.log(beginIndex);
+
+		var i , sum , temp , parentIndex ;
+
+		var loopTimes = 0;
+
+		while( line != 1 ){
+			beginIndex -= line;
+			parentIndex = beginIndex - line + 1;
+			select = [];
+			for( i = 0 , sum = line - 1 ; i < sum; ++i ){
+				data[parentIndex+i] += max( beginIndex + i , beginIndex + i + 1 , data );
+				loopTimes++;
+			}
+			--line;
+		}
+
+		console.log(loopTimes);
+
+		$('#sum').find('.fin-sum').html(data[0]);
+
+	</script>
+</body>
+</html>
