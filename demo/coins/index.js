@@ -156,3 +156,14 @@ var calculate = function(){
 $calculate.on('click',function(){
 	calculate();
 });
+
+
+$(function(){
+	var coins = location.search.slice(1).split(',');
+	$coins.find('input[name="coins[]"]').each(function(index,elem){
+		if (coins.length > index) {
+			$(this).val(coins[index]);
+		}
+	});
+});
+
