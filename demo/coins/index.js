@@ -159,7 +159,11 @@ $calculate.on('click',function(){
 
 
 $(function(){
-	var coins = location.search.slice(1).split(',');
+	var coins = [];
+	if (location.search.slice(1)) {
+		coins = location.search.slice(1).split(',');
+	}
+
 	$coins.find('input[name="coins[]"]').each(function(index,elem){
 		if (coins.length > index) {
 			$(this).val(coins[index]);
