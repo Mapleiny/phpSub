@@ -49,7 +49,7 @@ var findMin = function( key , history ){
 		arr[key] = list[key].length;
 	}
 	for( amount = 1 , sum = arr.length ; amount < sum ; ++amount ){
-		oldCount = count = arr[amount];
+		oldCount = count = arr[amount]
 		finalPart1 = finalPart2 = 0;
 		for( part1 = amount + 1 ; part1 < sum ; ++part1 ){
 			part2 = part1 - amount;
@@ -58,6 +58,7 @@ var findMin = function( key , history ){
 				finalPart1 = part1;
 				finalPart2 = part2;
 			}
+			arr[amount] = count;
 		}
 		result[amount] = {
 			count : count,
@@ -91,6 +92,7 @@ var calculate = function(){
 			coins.push( number );
 		}
 	});
+	coins.push(100);
 
 	amount = parseInt($amount.val());
 
@@ -102,6 +104,13 @@ var calculate = function(){
 	changeResult = addChange(result);
 	display(result,amount,changeResult);
 
+},formate = function(result,changeResult,coin){
+	console.log(coin);
+	if (changeResult[coin].part1 != 0) {
+		return formate(result,changeResult,changeResult[coin].part1)+"-"+formate(result,changeResult,changeResult[coin].part2);
+	}else{
+		return result[coin].join();
+	}
 },display = function(result,amount,changeResult){
 	var htmlArr = [],
 		replace = {},
@@ -115,8 +124,8 @@ var calculate = function(){
 
 	for( key in result ){
 		if( changeResult[key].part1 != 0 ){
-			conb1 = result[changeResult[key].part1].join();
-			conb2 = result[changeResult[key].part2].join();
+			conb1 = formate(result,changeResult,changeResult[key].part1); //result[changeResult[key].part1].join();
+			conb2 = formate(result,changeResult,changeResult[key].part2); //result[changeResult[key].part2].join();
 			temp = key +'='+ changeResult[key].part1 +'('+ conb1 +') - '+ changeResult[key].part2 +'('+ conb2 +')';
 		}else{
 			temp = '' ;
