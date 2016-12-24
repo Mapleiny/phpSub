@@ -6,4 +6,6 @@ let canvas = Raphael('container',MinSize.width,MinSize.height);
 
 Draw.canvas = canvas;
 
+
+
 let lineManager = new LineManager();

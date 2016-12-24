@@ -63,6 +63,11 @@ export class Line extends Path{
 			width : linkWidth
 		});
 
+		this.id = lineInfoData.id || (new Date()).toTimeString();
+		this.name = lineInfoData.name || '';
+		
+		this.element.id = this.id;
+
 		for (var stationName in lineInfoData.stations) {
 			let mayString = lineInfoData.stations[stationName];
 			if(typeof mayString == 'string') {
@@ -70,5 +75,9 @@ export class Line extends Path{
 				this.stationsName.push(realStationName);
 			}
 		}
+	}
+
+	toFront(){
+		this.element.toFront();
 	}
 }

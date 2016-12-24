@@ -18,4 +18,14 @@ export class StationManager{
 		let station = this.stations[stationName];
 		
 	}
+
+	toFront(stations?:Array<string>){
+		let self = this;
+		if(Raphael.is(stations,'array')) {
+			stations.forEach(function(stationName:string){
+				let station = self.stations[stationName];
+				station.toFront();
+			});
+		}
+	}
 }

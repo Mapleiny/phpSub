@@ -3029,6 +3029,9 @@ define("line", ["require", "exports", "dataSource", "shape"], function (require,
                 width: linkWidth
             });
             this.stationsName = [];
+            this.id = lineInfoData.id || (new Date()).toTimeString();
+            this.name = lineInfoData.name || '';
+            this.element.id = this.id;
             for (var stationName in lineInfoData.stations) {
                 var mayString = lineInfoData.stations[stationName];
                 if (typeof mayString == 'string') {
@@ -3037,6 +3040,9 @@ define("line", ["require", "exports", "dataSource", "shape"], function (require,
                 }
             }
         }
+        Line.prototype.toFront = function () {
+            this.element.toFront();
+        };
         return Line;
     }(shape_1.Path));
     exports.Line = Line;
@@ -3159,6 +3165,10 @@ define("station", ["require", "exports", "shape"], function (require, exports, s
             this.stationLabel = new StationLabel(stationInfo);
             this.stationLabel.converLocation(this.element);
         }
+        Station.prototype.toFront = function () {
+            this.element.toFront();
+            this.stationLabel.element.toFront();
+        };
         return Station;
     }(shape_2.Round));
     exports.Station = Station;
@@ -3176,22 +3186,56 @@ define("stationManager", ["require", "exports", "dataSource", "station"], functi
         StationManager.prototype.getStation = function (stationName) {
             return this.stations[stationName];
         };
+        StationManager.prototype.setTraslateStation = function (stationName) {
+            var station = this.stations[stationName];
+        };
+        StationManager.prototype.toFront = function (stations) {
+            var self = this;
+            if (Raphael.is(stations, 'array')) {
+                stations.forEach(function (stationName) {
+                    var station = self.stations[stationName];
+                    station.toFront();
+                });
+            }
+        };
         return StationManager;
     }());
     exports.StationManager = StationManager;
 });
-define("lineManager", ["require", "exports", "line", "stationManager", "dataSource"], function (require, exports, line_1, stationManager_1, dataSource_3) {
+define("lineManager", ["require", "exports", "line", "stationManager", "dataSource", "draw"], function (require, exports, line_1, stationManager_1, dataSource_3, draw_2) {
     "use strict";
     var LineManager = (function () {
         function LineManager() {
             this.lines = {};
+            var self = this;
             for (var lineId in dataSource_3.LinesInfoData) {
                 var lineInfo = dataSource_3.LinesInfoData[lineId];
-                this.lines[lineId] = new line_1.Line(lineInfo);
+                var line = new line_1.Line(lineInfo);
+                line.element.click(function (e) {
+                    self.onLineClick(e, this);
+                });
+                this.lines[lineId] = line;
             }
             this.stationManager = new stationManager_1.StationManager();
             this.updateInterface();
+            this.maskLayer = draw_2.Draw.canvas.rect(0, 0, draw_2.Draw.canvas.width, draw_2.Draw.canvas.height);
+            this.maskLayer.attr({
+                fill: '#fff',
+                opacity: '0.8'
+            }).hide();
+            this.maskLayer.click(function () {
+                self.onMaskClick();
+            });
         }
+        LineManager.prototype.onLineClick = function (e, targetLine) {
+            this.maskLayer.toFront().show();
+            var line = this.lines[targetLine.id];
+            line.toFront();
+            this.stationManager.toFront(line.stationsName);
+        };
+        LineManager.prototype.onMaskClick = function () {
+            this.maskLayer.hide();
+        };
         LineManager.prototype.updateInterface = function () {
             var _this = this;
             var _loop_1 = function() {
@@ -3213,9 +3257,9 @@ define("lineManager", ["require", "exports", "line", "stationManager", "dataSour
     }());
     exports.LineManager = LineManager;
 });
-define("main", ["require", "exports", "dataSource", "draw", "lineManager"], function (require, exports, dataSource_4, draw_2, lineManager_1) {
+define("main", ["require", "exports", "dataSource", "draw", "lineManager"], function (require, exports, dataSource_4, draw_3, lineManager_1) {
     "use strict";
     var canvas = Raphael('container', dataSource_4.MinSize.width, dataSource_4.MinSize.height);
-    draw_2.Draw.canvas = canvas;
+    draw_3.Draw.canvas = canvas;
     var lineManager = new lineManager_1.LineManager();
 });

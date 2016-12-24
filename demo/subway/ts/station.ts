@@ -124,4 +124,9 @@ export class Station extends Round{
 		this.stationLabel = new StationLabel(stationInfo);
 		this.stationLabel.converLocation(this.element);
 	}
+
+	toFront(){
+		this.element.toFront();
+		this.stationLabel.element.toFront();
+	}
 }
