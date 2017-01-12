@@ -1,7 +1,7 @@
 import {Point} from './interface'
-
 import {ILineInfoData,StationsInfoData} from './dataSource'
 import {Path} from './shape'
+import {LineLabel} from './lineLabel'
 
 var linkWidth = 8;
 
@@ -54,14 +54,28 @@ var converStationsToPoints = function(stations:{[key:string]:string|Point}):Arra
 
 export class Line extends Path{
 	id : string;
+	lineNumber:string;
 	name : string;
 	stationsName : Array<string> = [];
+	lineLabel1 : LineLabel;
+	lineLabel2 : LineLabel;
 	constructor(lineInfoData:ILineInfoData){
 		super({
 			points : converStationsToPoints(lineInfoData.stations),
 			color : lineInfoData.color,
 			width : linkWidth
 		});
+		this.lineLabel1 = new LineLabel(lineInfoData);
+		this.lineLabel2 = new LineLabel(lineInfoData);
+
+		this.lineLabel1.updatePosition(lineInfoData.loc1);
+		this.lineLabel2.updatePosition(lineInfoData.loc2);
+
+
+		this.id = lineInfoData.id || (new Date()).toTimeString();
+		this.name = lineInfoData.name || '';
+		
+		this.element.id = this.id;
 
 		for (var stationName in lineInfoData.stations) {
 			let mayString = lineInfoData.stations[stationName];
@@ -70,5 +84,11 @@ export class Line extends Path{
 				this.stationsName.push(realStationName);
 			}
 		}
+	}
+
+	toFront(){
+		this.element.toFront();
+		this.lineLabel1.toFront();
+		this.lineLabel2.toFront();
 	}
 }
