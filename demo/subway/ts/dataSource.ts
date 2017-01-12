@@ -2911,3 +2911,25 @@ export let MinSize = {
     width : minSize.width,
     height : minSize.height
 };
+
+
+
+
+
+
+let xhr = new XMLHttpRequest();
+
+xhr.open('POST','http://182.254.154.16:808/api/Goods/GetLineStations');
+
+xhr.setRequestHeader('Content-type','application/x-www-form-urlencoded');
+
+xhr.send('Citycde=021');
+
+
+
+
+
+
+
+
+

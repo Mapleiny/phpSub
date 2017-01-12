@@ -13,3 +13,33 @@ body,html{
 }
 #container,#canvas{
 }
+
+.select-tips{
+	border-radius: 3px;
+	padding:3px;
+	background: rgb(44, 45, 38);
+	position: absolute;
+	opacity: 0.9;
+	display: none;
+	width: 125px;
+}
+
+.select-tips::after{
+	content: "";
+    width: 10px;
+    height: 10px;
+    background: rgb(44, 45, 38);
+    position: absolute;
+    left: 50%;
+    bottom: -4px;
+    transform: rotate(45deg) translate(-50%,50%);
+}
+
+.select-tips button{
+	background: transparent;
+	outline: none;
+	border:none;
+	color:#fff;
+	display: inline-block;
+	padding: 2px 6px 3px;
+}

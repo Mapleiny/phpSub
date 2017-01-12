@@ -69,6 +69,10 @@ export class Text extends Shape{
 		this.size = textParams.size || 14;
 
 		this.element = this.canvas.text(this.location.x,this.location.y,this.text);
+		this.element.attr({
+			'font-size':this.size,
+			'fill' : this.color
+		});
 	}
 }
 

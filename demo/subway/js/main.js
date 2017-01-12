@@ -2890,6 +2890,10 @@ define("dataSource", ["require", "exports"], function (require, exports) {
         width: minSize.width,
         height: minSize.height
     };
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', 'http://182.254.154.16:808/api/Goods/GetLineStations');
+    xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+    xhr.send('Citycde=021');
 });
 define("shape", ["require", "exports", "draw"], function (require, exports, draw_1) {
     "use strict";
@@ -2905,12 +2909,13 @@ define("shape", ["require", "exports", "draw"], function (require, exports, draw
     var Round = (function (_super) {
         __extends(Round, _super);
         function Round(roundParams) {
-            _super.call(this, roundParams);
-            this.radius = roundParams.radius || 5;
-            this.borberColor = roundParams.borberColor || "#000";
-            this.borderWidth = roundParams.borderWidth || 1;
-            this.element = this.canvas.circle(this.location.x, this.location.y, 5);
-            this.update();
+            var _this = _super.call(this, roundParams) || this;
+            _this.radius = roundParams.radius || 5;
+            _this.borberColor = roundParams.borberColor || "#000";
+            _this.borderWidth = roundParams.borderWidth || 1;
+            _this.element = _this.canvas.circle(_this.location.x, _this.location.y, 5);
+            _this.update();
+            return _this;
         }
         Round.prototype.update = function () {
             this.element.attr({
@@ -2927,10 +2932,15 @@ define("shape", ["require", "exports", "draw"], function (require, exports, draw
     var Text = (function (_super) {
         __extends(Text, _super);
         function Text(textParams) {
-            _super.call(this, textParams);
-            this.text = textParams.text || "";
-            this.size = textParams.size || 14;
-            this.element = this.canvas.text(this.location.x, this.location.y, this.text);
+            var _this = _super.call(this, textParams) || this;
+            _this.text = textParams.text || "";
+            _this.size = textParams.size || 14;
+            _this.element = _this.canvas.text(_this.location.x, _this.location.y, _this.text);
+            _this.element.attr({
+                'font-size': _this.size,
+                'fill': _this.color
+            });
+            return _this;
         }
         return Text;
     }(Shape));
@@ -2938,14 +2948,15 @@ define("shape", ["require", "exports", "draw"], function (require, exports, draw
     var Path = (function (_super) {
         __extends(Path, _super);
         function Path(pathParams) {
-            _super.call(this, pathParams);
-            this.width = pathParams.width || 1;
-            this.element = this.canvas.path(this.createPathString(pathParams.points));
-            this.element.attr({
+            var _this = _super.call(this, pathParams) || this;
+            _this.width = pathParams.width || 1;
+            _this.element = _this.canvas.path(_this.createPathString(pathParams.points));
+            _this.element.attr({
                 'stroke-linejoin': 'round',
-                'stroke-width': this.width,
-                'stroke': this.color
+                'stroke-width': _this.width,
+                'stroke': _this.color
             });
+            return _this;
         }
         Path.prototype.createPathString = function (points) {
             var pathArray = [];
@@ -2972,7 +2983,40 @@ define("draw", ["require", "exports"], function (require, exports) {
     }());
     exports.Draw = Draw;
 });
-define("line", ["require", "exports", "dataSource", "shape"], function (require, exports, dataSource_1, shape_1) {
+define("lineLabel", ["require", "exports", "shape"], function (require, exports, shape_1) {
+    "use strict";
+    var LineLabel = (function (_super) {
+        __extends(LineLabel, _super);
+        function LineLabel(lineInfoData) {
+            var _this = _super.call(this, {
+                text: lineInfoData.num,
+                size: 30,
+                color: lineInfoData.color
+            }) || this;
+            _this.label = new shape_1.Text({
+                text: lineInfoData.lab,
+                size: 20
+            });
+            return _this;
+        }
+        LineLabel.prototype.updatePosition = function (location) {
+            this.element.attr(location);
+            var numBox = this.element.getBBox();
+            var labelBox = this.label.element.getBBox();
+            this.label.element.attr({
+                x: numBox.x2 + labelBox.width / 2 + 5,
+                y: numBox.cy
+            });
+        };
+        LineLabel.prototype.toFront = function () {
+            this.element.toFront();
+            this.label.element.toFront();
+        };
+        return LineLabel;
+    }(shape_1.Text));
+    exports.LineLabel = LineLabel;
+});
+define("line", ["require", "exports", "dataSource", "shape", "lineLabel"], function (require, exports, dataSource_1, shape_2, lineLabel_1) {
     "use strict";
     var linkWidth = 8;
     var getStationLoaction = function (stationName) {
@@ -3023,37 +3067,85 @@ define("line", ["require", "exports", "dataSource", "shape"], function (require,
     var Line = (function (_super) {
         __extends(Line, _super);
         function Line(lineInfoData) {
-            _super.call(this, {
+            var _this = _super.call(this, {
                 points: converStationsToPoints(lineInfoData.stations),
                 color: lineInfoData.color,
                 width: linkWidth
-            });
-            this.stationsName = [];
-            this.id = lineInfoData.id || (new Date()).toTimeString();
-            this.name = lineInfoData.name || '';
-            this.element.id = this.id;
+            }) || this;
+            _this.stationsName = [];
+            _this.lineLabel1 = new lineLabel_1.LineLabel(lineInfoData);
+            _this.lineLabel2 = new lineLabel_1.LineLabel(lineInfoData);
+            _this.lineLabel1.updatePosition(lineInfoData.loc1);
+            _this.lineLabel2.updatePosition(lineInfoData.loc2);
+            _this.id = lineInfoData.id || (new Date()).toTimeString();
+            _this.name = lineInfoData.name || '';
+            _this.element.id = _this.id;
             for (var stationName in lineInfoData.stations) {
                 var mayString = lineInfoData.stations[stationName];
                 if (typeof mayString == 'string') {
                     var realStationName = mayString.slice(0, 6);
-                    this.stationsName.push(realStationName);
+                    _this.stationsName.push(realStationName);
                 }
             }
+            return _this;
         }
         Line.prototype.toFront = function () {
             this.element.toFront();
+            this.lineLabel1.toFront();
+            this.lineLabel2.toFront();
         };
         return Line;
-    }(shape_1.Path));
+    }(shape_2.Path));
     exports.Line = Line;
 });
-define("station", ["require", "exports", "shape"], function (require, exports, shape_2) {
+define("selectTips", ["require", "exports"], function (require, exports) {
     "use strict";
+    var template = "\n<button value=\"start\">\u8BBE\u4E3A\u8D77\u70B9</button>\n<button value=\"end\">\u8BBE\u4E3A\u7EC8\u70B9</button>\n";
+    var SelectTips = (function () {
+        function SelectTips() {
+            this.createDom();
+        }
+        SelectTips.prototype.showTips = function (position, handle) {
+            this.selectHandle = handle;
+            this.element.style.display = 'block';
+            this.element.style.left = position.x - this.element.clientWidth / 2 + 3 + 'px';
+            this.element.style.top = position.y - this.element.clientHeight - 12 + 'px';
+        };
+        SelectTips.prototype.hideTips = function () {
+            this.element.style.display = 'none';
+        };
+        SelectTips.prototype.createDom = function () {
+            var self = this;
+            this.element = document.createElement('section');
+            this.element.classList.add('select-tips');
+            this.element.innerHTML = template;
+            this.element.addEventListener('click', function (e) {
+                self.didSelect(e.target.getAttribute('value'));
+            });
+            document.body.appendChild(this.element);
+        };
+        SelectTips.prototype.didSelect = function (type) {
+            this.selectHandle(type);
+        };
+        return SelectTips;
+    }());
+    exports.selectTips = new SelectTips();
+});
+define("station", ["require", "exports", "shape"], function (require, exports, shape_3) {
+    "use strict";
+    var transImagePath = './img/icons_trans.png';
+    var shareImagePath = './img/icons_share.png';
+    var StationType;
+    (function (StationType) {
+        StationType[StationType["share"] = 0] = "share";
+        StationType[StationType["trans"] = 1] = "trans";
+    })(StationType = exports.StationType || (exports.StationType = {}));
     var StationLabel = (function (_super) {
         __extends(StationLabel, _super);
         function StationLabel(stationInfo) {
-            _super.call(this, { text: stationInfo.name, size: 12 });
-            this.locationLabel = stationInfo.label;
+            var _this = _super.call(this, { text: stationInfo.name, size: 12 }) || this;
+            _this.locationLabel = stationInfo.label;
+            return _this;
         }
         StationLabel.prototype.converLocation = function (parentElement) {
             var textBox = this.element.getBBox();
@@ -3155,32 +3247,83 @@ define("station", ["require", "exports", "shape"], function (require, exports, s
             }
         };
         return StationLabel;
-    }(shape_2.Text));
+    }(shape_3.Text));
     exports.StationLabel = StationLabel;
     var Station = (function (_super) {
         __extends(Station, _super);
         function Station(stationInfo) {
-            _super.call(this, { radius: 5, location: stationInfo.loc, color: '#fff' });
-            this.id = stationInfo.id;
-            this.stationLabel = new StationLabel(stationInfo);
-            this.stationLabel.converLocation(this.element);
+            var _this = _super.call(this, { radius: 5, location: stationInfo.loc, color: '#fff' }) || this;
+            _this.lines = [];
+            _this.isTerminal = false;
+            _this.relativeStations = [];
+            _this.id = stationInfo.id;
+            _this.stationLabel = new StationLabel(stationInfo);
+            _this.stationLabel.converLocation(_this.element);
+            return _this;
         }
+        Station.prototype.setStationType = function (type) {
+            if (this.stationType == type) {
+                return;
+            }
+            this.stationType = type;
+            var currentBox = this.element.getBBox();
+            this.element.remove();
+            switch (type) {
+                case StationType.share:
+                    this.element = this.canvas.image(shareImagePath, currentBox.x, currentBox.y, 10, 10);
+                    break;
+                case StationType.trans:
+                    this.element = this.canvas.image(transImagePath, currentBox.x - 4, currentBox.y - 4, 16, 16);
+                    break;
+                default:
+                    break;
+            }
+            this.element.click(this.handle);
+            this.toFront();
+        };
+        Station.prototype.click = function (handle) {
+            this.handle = handle;
+            this.element.click(this.handle);
+        };
         Station.prototype.toFront = function () {
             this.element.toFront();
             this.stationLabel.element.toFront();
         };
         return Station;
-    }(shape_2.Round));
+    }(shape_3.Round));
     exports.Station = Station;
 });
-define("stationManager", ["require", "exports", "dataSource", "station"], function (require, exports, dataSource_2, station_1) {
+define("stationManager", ["require", "exports", "dataSource", "selectTips", "station", "station"], function (require, exports, dataSource_2, selectTips_1, station_1, station_2) {
     "use strict";
+    function __export(m) {
+        for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+    }
+    __export(station_1);
     var StationManager = (function () {
         function StationManager() {
             this.stations = {};
-            for (var stationName in dataSource_2.StationsInfoData) {
+            var _loop_1 = function () {
                 var stationInfo = dataSource_2.StationsInfoData[stationName];
-                this.stations[stationName] = new station_1.Station(stationInfo);
+                var station = new station_2.Station(stationInfo);
+                station.click(function (e) {
+                    selectTips_1.selectTips.showTips({
+                        x: station.element.getBBox().cx,
+                        y: station.element.getBBox().cy
+                    }, function (type) {
+                        selectTips_1.selectTips.hideTips();
+                        if (type == 'start') {
+                            console.log('set station:' + station.stationLabel.text + ' as start');
+                        }
+                        else {
+                            console.log('set station:' + station.stationLabel.text + ' as end');
+                        }
+                    });
+                });
+                this_1.stations[stationName] = station;
+            };
+            var this_1 = this;
+            for (var stationName in dataSource_2.StationsInfoData) {
+                _loop_1();
             }
         }
         StationManager.prototype.getStation = function (stationName) {
@@ -3238,19 +3381,53 @@ define("lineManager", ["require", "exports", "line", "stationManager", "dataSour
         };
         LineManager.prototype.updateInterface = function () {
             var _this = this;
-            var _loop_1 = function() {
-                var line = this_1.lines[lineId];
+            var _loop_2 = function () {
+                var line = this_2.lines[lineId];
                 var lineColor = line.color;
                 var stations = line.stationsName;
-                stations.forEach(function (value) {
+                var length_1 = stations.length;
+                var prevStation, nextStation;
+                stations.forEach(function (value, index) {
                     var station = _this.stationManager.getStation(value);
-                    station.borberColor = lineColor;
-                    station.update();
+                    prevStation = nextStation = null;
+                    if (index > 1) {
+                        prevStation = stations[index - 1];
+                    }
+                    if (index < length_1 - 1) {
+                        nextStation = stations[index + 1];
+                    }
+                    if (prevStation && nextStation) {
+                        if (station.relativeStations.indexOf(prevStation) == -1) {
+                            station.relativeStations.push(prevStation);
+                        }
+                        if (station.relativeStations.indexOf(nextStation) == -1) {
+                            station.relativeStations.push(nextStation);
+                        }
+                    }
+                    else {
+                        station.isTerminal = true;
+                    }
+                    if (station.lines.length > 0) {
+                        var isTransStop = (station.id.substr(1, 2) != lineId.substr(1, 2)) ||
+                            (station.relativeStations.length == 2 && station.isTerminal) ||
+                            station.relativeStations.length > 2;
+                        if (isTransStop) {
+                            station.setStationType(stationManager_1.StationType.trans);
+                        }
+                        else {
+                            station.setStationType(stationManager_1.StationType.share);
+                        }
+                    }
+                    else {
+                        station.borberColor = lineColor;
+                        station.lines.push(line.id);
+                        station.update();
+                    }
                 });
             };
-            var this_1 = this;
+            var this_2 = this;
             for (var lineId in this.lines) {
-                _loop_1();
+                _loop_2();
             }
         };
         return LineManager;
@@ -3261,5 +3438,23 @@ define("main", ["require", "exports", "dataSource", "draw", "lineManager"], func
     "use strict";
     var canvas = Raphael('container', dataSource_4.MinSize.width, dataSource_4.MinSize.height);
     draw_3.Draw.canvas = canvas;
+    /*
+    http://182.254.154.16:808/Goods/GetLineStations
+    http://182.254.154.16:808/Goods/Getdatabetweentwostations
+    http://182.254.154.16:808/Goods/GetGoodsList
+     */
+    document.getElementById('click').addEventListener('click', function () {
+        var string = JSON.stringify({
+            string: 'string info',
+            number: 123
+        });
+        try {
+            window['MainActivity'].pushTheTicketInfo(string);
+        }
+        catch (e) {
+            alert(e);
+        }
+        alert('MainActivity.pushTheTicketInfo:' + string);
+    });
     var lineManager = new lineManager_1.LineManager();
 });

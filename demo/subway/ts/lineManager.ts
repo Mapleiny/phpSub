@@ -1,5 +1,5 @@
 import {Line} from './line';
-import {StationManager} from './stationManager'
+import {StationManager,StationType} from './stationManager'
 import {LinesInfoData} from './dataSource'
 import {Draw} from './draw'
 
@@ -50,10 +50,44 @@ export class LineManager{
 			let lineColor = line.color;
 			let stations = line.stationsName;
 
-			stations.forEach((value)=>{
+
+			let length = stations.length;
+			let prevStation,nextStation;
+			stations.forEach((value,index)=>{
 				let station = this.stationManager.getStation(value);
-				station.borberColor = lineColor;
-				station.update();
+				prevStation = nextStation = null;
+				if(index > 1) {
+					prevStation = stations[index-1];
+				}
+				if(index < length - 1) {
+					nextStation = stations[index+1];
+				}
+
+				if(prevStation && nextStation) {
+					if(station.relativeStations.indexOf(prevStation) == -1){
+						station.relativeStations.push(prevStation);
+					}
+					if(station.relativeStations.indexOf(nextStation) == -1){
+						station.relativeStations.push(nextStation);
+					}
+				}else{
+					station.isTerminal = true;
+				}
+
+				if(station.lines.length > 0) {
+					let isTransStop = (station.id.substr(1,2) != lineId.substr(1,2)) ||
+									  (station.relativeStations.length == 2 && station.isTerminal)||
+									  station.relativeStations.length > 2;
+					if(isTransStop) {
+						station.setStationType(StationType.trans);
+					}else{
+						station.setStationType(StationType.share);
+					}
+				}else{
+					station.borberColor = lineColor;
+					station.lines.push(line.id);
+					station.update();
+				}
 			});
 		}
 	}

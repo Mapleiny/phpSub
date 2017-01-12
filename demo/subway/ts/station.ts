@@ -2,6 +2,12 @@ import {Round,Text} from './shape'
 import {Point} from './interface'
 import {IStationInfoData} from './dataSource'
 
+let transImagePath = './img/icons_trans.png';
+let shareImagePath = './img/icons_share.png';
+
+export enum StationType{
+	share,trans
+}
 
 
 export class StationLabel extends Text{
@@ -115,7 +121,16 @@ export class StationLabel extends Text{
 
 export class Station extends Round{
 	id:string;
+	lines : Array<string> = [];
 	stationLabel:StationLabel;
+
+	isTerminal:boolean = false;
+
+	relativeStations:Array<string> = [];
+
+	private stationType:StationType;
+
+	private handle;
 
 	constructor(stationInfo:IStationInfoData){
 		super({radius : 5,location:stationInfo.loc, color:'#fff'});
@@ -123,6 +138,33 @@ export class Station extends Round{
 		this.id = stationInfo.id;
 		this.stationLabel = new StationLabel(stationInfo);
 		this.stationLabel.converLocation(this.element);
+	}
+
+	setStationType(type:StationType){
+		if(this.stationType == type) {
+			return ;
+		}
+		this.stationType = type;
+		let currentBox = this.element.getBBox();
+		this.element.remove();
+		switch (type) {
+			case StationType.share:
+				this.element = this.canvas.image(shareImagePath,currentBox.x,currentBox.y,10,10);
+				break;
+			case StationType.trans:
+				this.element = this.canvas.image(transImagePath,currentBox.x-4,currentBox.y-4,16,16);
+				break;
+			default:
+				break;
+		}
+		this.element.click(this.handle);
+		this.toFront();
+	}
+
+	click(handle:Function){
+		this.handle = handle;
+
+		this.element.click(this.handle);
 	}
 
 	toFront(){
