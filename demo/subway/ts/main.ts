@@ -27,3 +27,10 @@ document.getElementById('click').addEventListener('click',function(){
 });
 
 let lineManager = new LineManager();
+
+
+window['CLEAR_MAP_INFO'] = function(){
+	alert('CLEAR_MAP_INFO:'+JSON.stringify(arguments));
+};
+
+

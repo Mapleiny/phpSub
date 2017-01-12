@@ -3457,4 +3457,7 @@ define("main", ["require", "exports", "dataSource", "draw", "lineManager"], func
         alert('MainActivity.pushTheTicketInfo:' + string);
     });
     var lineManager = new lineManager_1.LineManager();
+    window['CLEAR_MAP_INFO'] = function () {
+        alert('CLEAR_MAP_INFO:' + JSON.stringify(arguments));
+    };
 });
