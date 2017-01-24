@@ -1,9 +1,11 @@
-import {Round,Text} from './shape'
+import {Round,Text,Shape} from './shape'
 import {Point} from './interface'
 import {IStationInfoData} from './dataSource'
 
 let transImagePath = './img/icons_trans.png';
 let shareImagePath = './img/icons_share.png';
+let startImagePath = './img/icons_start_point.png'
+let endImagePath = './img/icons_end_point.png'
 
 export enum StationType{
 	share,trans
@@ -128,6 +130,10 @@ export class Station extends Round{
 
 	relativeStations:Array<string> = [];
 
+	requestId : string;
+
+	readonly name : string;
+
 	private stationType:StationType;
 
 	private handle;
@@ -138,6 +144,7 @@ export class Station extends Round{
 		this.id = stationInfo.id;
 		this.stationLabel = new StationLabel(stationInfo);
 		this.stationLabel.converLocation(this.element);
+		this.name = stationInfo.name;
 	}
 
 	setStationType(type:StationType){

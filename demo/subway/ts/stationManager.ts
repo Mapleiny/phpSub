@@ -1,5 +1,6 @@
-import {StationsInfoData} from './dataSource'
+// import {StationsInfoData} from './dataSource'
 import {selectTips} from './selectTips'
+import {stationMark} from './stationMark'
 
 export * from './station'
 import {Station} from './station'
@@ -8,25 +9,77 @@ export class StationManager{
 	
 	private stations : {[key:string]:Station} = {};
 
-	constructor(){
-		for (var stationName in StationsInfoData) {
-			let stationInfo = StationsInfoData[stationName];
+	startStation:Station;
+	endStation:Station;
+
+	constructor(stationsInfoData){
+		let self = this;
+		for (var stationName in stationsInfoData) {
+			let stationInfo = stationsInfoData[stationName];
 			let station = new Station(stationInfo);
+			let box = station.element.getBBox();
 			station.click(function(e){
 				selectTips.showTips({
-					x : station.element.getBBox().cx,
-					y : station.element.getBBox().cy
+					x : box.cx,
+					y : box.cy
 				},function(type){
 					selectTips.hideTips();
 					if(type == 'start') {
-						console.log('set station:'+station.stationLabel.text+' as start');
+						stationMark.show(true,{
+							x : box.cx,
+							y : box.cy
+						})
+						self.startStation = station;
 					}else{
-						console.log('set station:'+station.stationLabel.text+' as end');
+						stationMark.show(false,{
+							x : box.cx,
+							y : box.cy
+						})
+						self.endStation = station;
 					}
+					self.checkStartAndEnd();
 				});
+
+				
 			});
 			this.stations[stationName] = station;
 		}
+	}
+
+	getDataBetweenTowStation(startStation:Station,endStation:Station,callback:Function){
+		if(!startStation || !endStation) {
+			return ;
+		}
+
+		let xhr = new XMLHttpRequest();
+		xhr.addEventListener("readystatechange", function () {
+			if (this.readyState === 4) {
+				var info;
+				try{
+					info = JSON.parse(this.response);
+				}catch(e){
+
+				}
+				callback(info);
+			}
+		});
+		xhr.open("POST", "http://182.254.154.16:808/api/Goods/Getdatabetweentwostations");
+		xhr.setRequestHeader('Content-type','application/x-www-form-urlencoded');
+		xhr.setRequestHeader('Accept','application/json');
+		xhr.send(`Cityid=021&originating%20station=${startStation.requestId}&terminate%20station=${endStation.requestId}`);
+	}
+
+	checkStartAndEnd(){
+		let self = this;
+		this.getDataBetweenTowStation(this.startStation,this.endStation,function(result){
+			if(!result) {
+				return ;
+			}
+			let message = `${self.startStation.name} —— ${self.endStation.name} \n  价格:${result.content.Price}元`;
+			if(confirm(message)) {
+				window['MainActivity'].pushTheTicketInfo(JSON.stringify(result));
+			}
+		});
 	}
 
 	getStation(stationName:string):Station{

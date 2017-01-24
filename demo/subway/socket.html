@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="white">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<title>Task-Vote</title>
+	<link rel="stylesheet" type="text/css" href="css/animate.css">
+	<style type="text/css">
+		*{
+			box-sizing: border-box;
+			-webkit-user-select:none;
+			font-family: Monaco;
+		}
+		html,body{
+			margin:0;
+			padding: 0;
+			width: 100%;
+			height: 100%;
+		}
+		.warpper{
+			display: flex;
+			flex-direction:column;
+			width: 100%;
+			height: 100%;
+		}
+		.scoreArea{
+			flex-grow:20;
+			display: flex;
+			position: relative;
+			align-items: center;
+			justify-content: center;
+		}
+		.scoreDisplay{
+			font-size: 100px;
+		}
+		.member{
+			border-top: dashed 1px #999;
+			padding: 5px;
+			display: flex;
+			flex-grow: 1;
+			flex-direction:column;
+			font-size: 10px;
+			justify-content:center;
+		}
+		.member .user{
+			margin:2px;
+			padding: 0 1px;
+			border-radius: 3px;
+			color: white;
+		}
+		.participator,.watcher{
+			display: flex;
+			align-items:center;
+			flex-wrap:wrap;
+		}
+		.participator{
+			flex-grow: 1;
+		}
+		.participator .user{
+			/*background: rgb(92, 184, 92);*/
+			border:dotted 1px #999;
+			color: #333;
+		}
+		.watcher{
+			flex-grow: 1;
+		}
+		.watcher .user{
+			color: #999;
+		}
+		.keyboard{
+			border-top: dashed 1px #999;
+			flex-grow:6;
+			display: flex;
+			flex-wrap: wrap;
+		}
+		.keyboard .item{
+			display: flex;
+			flex-basis:33.33%;
+			justify-content:center;
+			align-items:center;
+			font-size: 20px;
+			font-family: Monaco;
+			position: relative;
+			padding: 2px;
+		}
+/*		.keyboard .item span{
+			border-radius: 5px;
+			display: flex;
+			justify-content:center;
+			align-items:center;
+			text-decoration: none;
+			color: #333;
+			border-radius: 5px;
+			flex-grow:1;
+		}*/
+	</style>
+</head>
+<body>
+	<div class="warpper">
+		<section class="scoreArea">
+			<div class="scoreDisplay" id="scoreInput">0</div>
+		</section>
+		<!-- <span class="user">你的室友</span> -->
+		<section class="member">
+			<div class="participator" id="participator">
+			</div>
+			<div class="watcher" id="watcher">
+			</div>
+		</section>
+		<section class="keyboard" id="keyboard">
+			<div class="item" value="7">7</div>
+			<div class="item" value="8">8</div>
+			<div class="item" value="9">9</div>
+			<div class="item" value="4">4</div>
+			<div class="item" value="5">5</div>
+			<div class="item" value="6">6</div>
+			<div class="item" value="1">1</div>
+			<div class="item" value="2">2</div>
+			<div class="item" value="3">3</div>
+			<div class="item" value="del">del</div>
+			<div class="item" value=".">.</div>
+			<div class="item" value="ok">ok</div>
+		</section>
+	</div>
+</body>
+<script type="text/javascript" src="js/socket.io-1.4.5.js"></script>
+<script type="text/javascript">
+
+var participator = document.body.querySelector('#participator');
+var watcher = document.body.querySelector('#watcher');
+
+var createMemberHtml = function(name){
+	var element = document.createElement('span');
+	element.classList.add('user');
+	element.innerHTML = name;
+	return element;
+};
+
+
+var socket = io('http://10.235.140.54:3001/ScoreAverage');
+socket.on('connect',function(s){
+});
+socket.on('disconnect',function(s){
+});
+
+socket.on('in',function(s){
+	var info = JSON.parse(s);
+	// <span class="user">你的室友</span>
+	watcher.append(createMemberHtml(info.userName||info.userId));
+});
+
+socket.on('out',function(s){
+	var info = JSON.parse(s);
+	console.log(info.userId+' out!');
+});
+
+socket.on('vote',function(s){
+	var info = JSON.parse(s);
+	console.log(info.userId+' vote!');
+});
+
+socket.on('join',function(s){
+	var info = JSON.parse(s);
+	console.log(info.userId+' join!');
+});
+
+socket.on('leave',function(s){
+	var info = JSON.parse(s);
+	console.log(info.userId+' leave!');
+});
+
+var inputValue = [];
+
+var dotIndex = -1;
+
+var scoreInput = document.body.querySelector('#scoreInput');
+
+var fillNumber = function(){
+	var value = inputValue.join('');
+	scoreInput.innerHTML = value || 0;
+}
+
+var sendScore = function(){
+	var value = inputValue.join('');
+	socket.emit('vote',value);
+}
+
+var onInput = function(input){
+
+	switch(input){
+		case '.':
+			if (dotIndex == -1) {
+				dotIndex = inputValue.push(input);
+				fillNumber();
+			}
+		break;
+
+		case 'del':
+			var value =  inputValue.pop();
+			if (value == '.' && dotIndex != -1) {
+				dotIndex = -1;
+			}
+			fillNumber();
+		break;
+
+		case 'ok':
+			sendScore();
+		break;
+
+		default:
+			var num = +input;
+			if (!isNaN(num) && (dotIndex == -1 ||  num == 5 )) {
+				inputValue.push(num);
+				fillNumber();
+			}
+
+	}
+};
+
+document.body.querySelector('#keyboard').addEventListener('touchstart',function(event){
+	var valueAttr = event.target.attributes['value'];
+	if (valueAttr) {
+		onInput(valueAttr.value);
+	}
+});
+
+
+</script>
+</html>

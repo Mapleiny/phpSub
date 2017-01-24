@@ -15,7 +15,6 @@ class SelectTips{
 	}
 
 	showTips(position:Point,handle:Function){
-
 		this.selectHandle = handle;
 		this.element.style.display = 'block';
 		this.element.style.left = position.x - this.element.clientWidth/2 + 3 + 'px';

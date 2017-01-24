@@ -43,3 +43,10 @@ body,html{
 	display: inline-block;
 	padding: 2px 6px 3px;
 }
+
+.mark{
+	position: absolute;
+	width: 25px;
+	height: 40px;
+	display: none;
+}

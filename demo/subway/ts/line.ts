@@ -1,12 +1,18 @@
 import {Point} from './interface'
-import {ILineInfoData,StationsInfoData} from './dataSource'
+import {ILineInfoData} from './dataSource'
 import {Path} from './shape'
 import {LineLabel} from './lineLabel'
 
+
+// var testLength = 6;
+// var Length = 4;
+
+var stationNameLength = 6;
+
 var linkWidth = 8;
 
-var getStationLoaction = function(stationName:string):Point{
-	return StationsInfoData[stationName].loc;
+var getStationLoaction = function(stationName:string,stationsInfoData):Point{
+	return stationsInfoData[stationName].loc;
 };
 
 var zoom = 1.2;
@@ -29,7 +35,7 @@ var azimuth = {
 	TL: {x: -linkWidth*zoom*0.7, y: -linkWidth*zoom*0.7}
 };
 
-var converStationsToPoints = function(stations:{[key:string]:string|Point}):Array<Point>{
+var converStationsToPoints = function(stations:{[key:string]:string|Point},stationsInfoData):Array<Point>{
 	var pathPoints = [];
 	for (var stationName in stations) {
 		let pathPoint:Point;
@@ -37,8 +43,8 @@ var converStationsToPoints = function(stations:{[key:string]:string|Point}):Arra
 		if(typeof maybeString == 'string') {
 			let stationMMName = maybeString as string;
 			let offset:Point = {x:0,y:0}; 
-			pathPoint = getStationLoaction(stationMMName.slice(0,6));
-			let offsetKey = stationMMName.slice(6,8);
+			pathPoint = getStationLoaction(stationMMName.slice(0,stationNameLength),stationsInfoData);
+			let offsetKey = stationMMName.slice(stationNameLength,stationNameLength+2);
 			if(offsetKey) {
 				offset = azimuth[offsetKey];
 			}
@@ -59,9 +65,9 @@ export class Line extends Path{
 	stationsName : Array<string> = [];
 	lineLabel1 : LineLabel;
 	lineLabel2 : LineLabel;
-	constructor(lineInfoData:ILineInfoData){
+	constructor(lineInfoData:ILineInfoData,stationsInfoData){
 		super({
-			points : converStationsToPoints(lineInfoData.stations),
+			points : converStationsToPoints(lineInfoData.stations,stationsInfoData),
 			color : lineInfoData.color,
 			width : linkWidth
 		});
@@ -80,7 +86,7 @@ export class Line extends Path{
 		for (var stationName in lineInfoData.stations) {
 			let mayString = lineInfoData.stations[stationName];
 			if(typeof mayString == 'string') {
-				let realStationName = (mayString as string).slice(0,6);
+				let realStationName = (mayString as string).slice(0,stationNameLength);
 				this.stationsName.push(realStationName);
 			}
 		}
