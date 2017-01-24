@@ -3402,7 +3402,9 @@ define("stationManager", ["require", "exports", "selectTips", "stationMark", "st
                 }
                 var message = self.startStation.name + " \u2014\u2014 " + self.endStation.name + " \n  \u4EF7\u683C:" + result.content.Price + "\u5143";
                 if (confirm(message)) {
-                    window['MainActivity'].pushTheTicketInfo(JSON.stringify(result));
+                    if (window['MainActivity']) {
+                        window['MainActivity'].pushTheTicketInfo(JSON.stringify(result));
+                    }
                 }
             });
         };
