@@ -1,6 +1,5 @@
 import {Line} from './line';
 import {StationManager,StationType} from './stationManager'
-import {LinesInfoData} from './dataSource'
 import {Draw} from './draw'
 
 export class LineManager{
@@ -8,17 +7,17 @@ export class LineManager{
 	private stationManager:StationManager;
 	private maskLayer : Raphael.Element;
 
-	constructor(){
+	constructor(infoData){
 		let self = this;
-		for (var lineId in LinesInfoData) {
-			let lineInfo = LinesInfoData[lineId];
-			let line = new Line(lineInfo);
+		for (var lineId in infoData.lines) {
+			let lineInfo = infoData.lines[lineId];
+			let line = new Line(lineInfo,infoData.stations);
 			line.element.click(function(e){
 				self.onLineClick(e,this);
 			});
 			this.lines[lineId] = line;
 		}
-		this.stationManager = new StationManager();
+		this.stationManager = new StationManager(infoData.stations);
 
 		this.updateInterface();
 

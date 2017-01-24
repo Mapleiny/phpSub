@@ -1,6 +1,6 @@
 import {Point} from './interface'
 import {Text} from './shape'
-import {ILineInfoData,StationsInfoData} from './dataSource'
+import {ILineInfoData} from './dataSource'
 export class LineLabel extends Text{
 	private label : Text;
 	constructor(lineInfoData:ILineInfoData){
