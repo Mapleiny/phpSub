@@ -77,7 +77,9 @@ export class StationManager{
 			}
 			let message = `${self.startStation.name} —— ${self.endStation.name} \n  价格:${result.content.Price}元`;
 			if(confirm(message)) {
-				window['MainActivity'].pushTheTicketInfo(JSON.stringify(result));
+				if(window['MainActivity']) {
+					window['MainActivity'].pushTheTicketInfo(JSON.stringify(result));
+				}
 			}
 		});
 	}
