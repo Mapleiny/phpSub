@@ -3354,6 +3354,9 @@ define("stationManager", ["require", "exports", "selectTips", "stationMark", "st
                                 x: box.cx,
                                 y: box.cy
                             });
+                            if (self.endStation == station) {
+                                self.endStation = null;
+                            }
                             self.startStation = station;
                         }
                         else {
@@ -3361,6 +3364,9 @@ define("stationManager", ["require", "exports", "selectTips", "stationMark", "st
                                 x: box.cx,
                                 y: box.cy
                             });
+                            if (self.startStation == station) {
+                                self.startStation = null;
+                            }
                             self.endStation = station;
                         }
                         self.checkStartAndEnd();
@@ -3400,7 +3406,7 @@ define("stationManager", ["require", "exports", "selectTips", "stationMark", "st
                 if (!result) {
                     return;
                 }
-                var message = self.startStation.name + " \u2014\u2014 " + self.endStation.name + " \n  \u4EF7\u683C:" + result.content.Price + "\u5143";
+                var message = "\u8D77\u70B9\u7AD9\uFF1A" + self.startStation.name + "\n\u7EC8\u70B9\u7AD9: " + self.endStation.name + "\n\u4EF7\u683C:" + result.content.Price + "\u5206";
                 if (confirm(message)) {
                     if (window['MainActivity']) {
                         window['MainActivity'].pushTheTicketInfo(JSON.stringify(result));
