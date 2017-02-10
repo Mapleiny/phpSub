@@ -28,13 +28,19 @@ export class StationManager{
 						stationMark.show(true,{
 							x : box.cx,
 							y : box.cy
-						})
+						});
+						if(self.endStation == station) {
+							self.endStation = null;
+						}
 						self.startStation = station;
 					}else{
 						stationMark.show(false,{
 							x : box.cx,
 							y : box.cy
-						})
+						});
+						if(self.startStation == station) {
+							self.startStation = null;
+						}
 						self.endStation = station;
 					}
 					self.checkStartAndEnd();
@@ -75,7 +81,7 @@ export class StationManager{
 			if(!result) {
 				return ;
 			}
-			let message = `${self.startStation.name} —— ${self.endStation.name} \n  价格:${result.content.Price}元`;
+			let message = `起点站：${self.startStation.name}\n终点站: ${self.endStation.name}\n价格:${result.content.Price}分`;
 			if(confirm(message)) {
 				if(window['MainActivity']) {
 					window['MainActivity'].pushTheTicketInfo(JSON.stringify(result));
