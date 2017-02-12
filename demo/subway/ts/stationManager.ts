@@ -72,7 +72,7 @@ export class StationManager{
 		xhr.open("POST", "http://182.254.154.16:808/api/Goods/Getdatabetweentwostations");
 		xhr.setRequestHeader('Content-type','application/x-www-form-urlencoded');
 		xhr.setRequestHeader('Accept','application/json');
-		xhr.send(`Cityid=021&originating%20station=${startStation.requestId}&terminate%20station=${endStation.requestId}`);
+		xhr.send(`Cityid=021&originating%20station=${startStation.id}&terminate%20station=${endStation.id}`);
 	}
 
 	checkStartAndEnd(){
@@ -83,8 +83,15 @@ export class StationManager{
 			}
 			let message = `起点站：${self.startStation.name}\n终点站: ${self.endStation.name}\n价格:${result.content.Price}分`;
 			if(confirm(message)) {
+				let messag = JSON.stringify({
+					'startStationName' : self.startStation.name,
+					'startStationCode' : self.startStation.id,
+					'endStationName' : self.endStation.name,
+					'endStationCode' : self.endStation.id,
+					'Price' : result.content.Price
+				});
 				if(window['MainActivity']) {
-					window['MainActivity'].pushTheTicketInfo(JSON.stringify(result));
+					window['MainActivity'].pushTheTicketInfo(messag);
 				}
 			}
 		});

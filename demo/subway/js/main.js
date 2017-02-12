@@ -3398,7 +3398,7 @@ define("stationManager", ["require", "exports", "selectTips", "stationMark", "st
             xhr.open("POST", "http://182.254.154.16:808/api/Goods/Getdatabetweentwostations");
             xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
             xhr.setRequestHeader('Accept', 'application/json');
-            xhr.send("Cityid=021&originating%20station=" + startStation.requestId + "&terminate%20station=" + endStation.requestId);
+            xhr.send("Cityid=021&originating%20station=" + startStation.id + "&terminate%20station=" + endStation.id);
         };
         StationManager.prototype.checkStartAndEnd = function () {
             var self = this;
@@ -3408,8 +3408,16 @@ define("stationManager", ["require", "exports", "selectTips", "stationMark", "st
                 }
                 var message = "\u8D77\u70B9\u7AD9\uFF1A" + self.startStation.name + "\n\u7EC8\u70B9\u7AD9: " + self.endStation.name + "\n\u4EF7\u683C:" + result.content.Price + "\u5206";
                 if (confirm(message)) {
+                    var messag = JSON.stringify({
+                        'startStationName': self.startStation.name,
+                        'startStationCode': self.startStation.id,
+                        'endStationName': self.endStation.name,
+                        'endStationCode': self.endStation.id,
+                        'Price': result.content.Price
+                    });
+                    console.log(messag);
                     if (window['MainActivity']) {
-                        window['MainActivity'].pushTheTicketInfo(JSON.stringify(result));
+                        window['MainActivity'].pushTheTicketInfo(messag);
                     }
                 }
             });
