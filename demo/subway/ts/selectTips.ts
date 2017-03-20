@@ -1,4 +1,5 @@
 import {Point} from './interface'
+import {Draw} from './draw'
 let template = `
 <button value="start">设为起点</button>
 <button value="end">设为终点</button>
@@ -10,6 +11,8 @@ class SelectTips{
 
 	private element:HTMLElement;
 
+	private origin:Point;
+
 	constructor(){
 		this.createDom();
 	}
@@ -17,8 +20,22 @@ class SelectTips{
 	showTips(position:Point,handle:Function){
 		this.selectHandle = handle;
 		this.element.style.display = 'block';
-		this.element.style.left = position.x - this.element.clientWidth/2 + 3 + 'px';
-		this.element.style.top = position.y - this.element.clientHeight - 12 + 'px';
+		this.origin = position;
+
+		this.updatePosition();
+		
+	}
+
+	updatePosition(){
+		if(!this.origin) {
+			return ;
+		}
+		let convertPoint = Draw.pointInViewBox({
+			x : this.origin.x,
+			y : this.origin.y
+		});
+		this.element.style.left = convertPoint.x - this.element.clientWidth/2 + 3 + 'px';
+		this.element.style.top = convertPoint.y - this.element.clientHeight - 12 + 'px';
 	}
 
 	hideTips(){
@@ -34,8 +51,7 @@ class SelectTips{
 		this.element.addEventListener('click',function(e){
 			self.didSelect((e.target as HTMLElement).getAttribute('value'));
 		});
-
-		document.body.appendChild(this.element);
+		document.getElementById('container').appendChild(this.element);
 	}
 
 	private didSelect(type:string){

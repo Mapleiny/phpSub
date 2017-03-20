@@ -2,6 +2,8 @@ import {Draw} from './draw'
 import {LineManager} from './lineManager'
 import {stationMark} from './stationMark'
 
+import {TouchControl} from './touch'
+
 /*
 http://182.254.154.16:808/Goods/GetLineStations
 http://182.254.154.16:808/Goods/Getdatabetweentwostations
@@ -50,9 +52,16 @@ xhr.addEventListener("readystatechange", function () {
 		try{
 			let info = JSON.parse(this.response);
 			let MinSize = getMinWidthHeight(info.content);
-			let canvas = Raphael('container',MinSize.width,MinSize.height);
+			let canvas = Raphael('container',window.innerWidth,window.innerHeight);
 			Draw.canvas = canvas;
+			Draw.size = {
+				width : MinSize.width,
+				height : MinSize.height
+			}
 			let lineManager = new LineManager(info.content);
+
+			let $container = document.getElementById('container');
+			let touchControl = new TouchControl($container,canvas);
 		}catch(e){
 
 		}
