@@ -2968,11 +2968,73 @@ define("shape", ["require", "exports", "draw"], function (require, exports, draw
 });
 define("draw", ["require", "exports"], function (require, exports) {
     "use strict";
+    var lastClientRect = {
+        x: 0,
+        y: 0,
+        width: window.innerWidth,
+        height: window.innerHeight,
+        fit: false
+    };
+    var currentScale = 1;
+    var setViewBox = function () {
+        Draw.canvas.setViewBox(lastClientRect.x, lastClientRect.y, lastClientRect.width / currentScale, lastClientRect.height / currentScale, lastClientRect.fit);
+    };
     var Draw = (function () {
         function Draw() {
         }
+        Object.defineProperty(Draw, "size", {
+            get: function () {
+                return this._size;
+            },
+            set: function (v) {
+                this._size = v;
+                var scaleW = this.canvas.width / v.width;
+                var scaleH = this.canvas.height / v.height;
+                var minScale = Math.min(scaleW, scaleH);
+                this.minScale = minScale;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Draw.move = function (x, y) {
+            lastClientRect.x -= x / currentScale;
+            lastClientRect.y -= y / currentScale;
+            lastClientRect.x = Math.min(Math.max(lastClientRect.x, 0), this.size.width - this.canvas.width / currentScale);
+            if (currentScale < this.canvas.height / this.size.height) {
+                lastClientRect.y = Math.min(Math.max(lastClientRect.y, this.size.height - this.canvas.height / currentScale), 0);
+            }
+            else {
+                lastClientRect.y = Math.min(Math.max(lastClientRect.y, 0), this.size.height - this.canvas.height / currentScale);
+            }
+            setViewBox();
+            return true;
+        };
+        Draw.scale = function (origin, scale) {
+            if (currentScale == 3 && scale >= 1) {
+                return;
+            }
+            currentScale *= scale;
+            currentScale = Math.max(Math.min(currentScale, 3), this.minScale);
+            // if(currentScale != 3) {
+            lastClientRect.x += origin.x * (scale - 1) / currentScale;
+            lastClientRect.y += origin.y * (scale - 1) / currentScale;
+            // }
+            if (currentScale == this.minScale) {
+                lastClientRect.x = -(lastClientRect.width / currentScale - this.size.width) / 2;
+                lastClientRect.y = -(lastClientRect.height / currentScale - this.size.height) / 2;
+            }
+            setViewBox();
+            return true;
+        };
+        Draw.pointInViewBox = function (origin) {
+            return {
+                x: (origin.x - lastClientRect.x) * currentScale,
+                y: (origin.y - lastClientRect.y) * currentScale
+            };
+        };
         return Draw;
     }());
+    Draw.minScale = 1;
     exports.Draw = Draw;
 });
 define("lineLabel", ["require", "exports", "shape"], function (require, exports, shape_1) {
@@ -3093,7 +3155,7 @@ define("line", ["require", "exports", "shape", "lineLabel"], function (require, 
     }(shape_2.Path));
     exports.Line = Line;
 });
-define("selectTips", ["require", "exports"], function (require, exports) {
+define("selectTips", ["require", "exports", "draw"], function (require, exports, draw_2) {
     "use strict";
     var template = "\n<button value=\"start\">\u8BBE\u4E3A\u8D77\u70B9</button>\n<button value=\"end\">\u8BBE\u4E3A\u7EC8\u70B9</button>\n";
     var SelectTips = (function () {
@@ -3103,8 +3165,19 @@ define("selectTips", ["require", "exports"], function (require, exports) {
         SelectTips.prototype.showTips = function (position, handle) {
             this.selectHandle = handle;
             this.element.style.display = 'block';
-            this.element.style.left = position.x - this.element.clientWidth / 2 + 3 + 'px';
-            this.element.style.top = position.y - this.element.clientHeight - 12 + 'px';
+            this.origin = position;
+            this.updatePosition();
+        };
+        SelectTips.prototype.updatePosition = function () {
+            if (!this.origin) {
+                return;
+            }
+            var convertPoint = draw_2.Draw.pointInViewBox({
+                x: this.origin.x,
+                y: this.origin.y
+            });
+            this.element.style.left = convertPoint.x - this.element.clientWidth / 2 + 3 + 'px';
+            this.element.style.top = convertPoint.y - this.element.clientHeight - 12 + 'px';
         };
         SelectTips.prototype.hideTips = function () {
             this.element.style.display = 'none';
@@ -3117,7 +3190,7 @@ define("selectTips", ["require", "exports"], function (require, exports) {
             this.element.addEventListener('click', function (e) {
                 self.didSelect(e.target.getAttribute('value'));
             });
-            document.body.appendChild(this.element);
+            document.getElementById('container').appendChild(this.element);
         };
         SelectTips.prototype.didSelect = function (type) {
             this.selectHandle(type);
@@ -3126,7 +3199,7 @@ define("selectTips", ["require", "exports"], function (require, exports) {
     }());
     exports.selectTips = new SelectTips();
 });
-define("stationMark", ["require", "exports"], function (require, exports) {
+define("stationMark", ["require", "exports", "draw"], function (require, exports, draw_3) {
     "use strict";
     var StationMark = (function () {
         function StationMark() {
@@ -3137,28 +3210,46 @@ define("stationMark", ["require", "exports"], function (require, exports) {
             this.endMark.src = './img/icon_end_point.png';
             this.startMark.classList.add('mark');
             this.endMark.classList.add('mark');
-            document.body.appendChild(this.startMark);
-            document.body.appendChild(this.endMark);
+            var $container = document.getElementById('container');
+            $container.appendChild(this.startMark);
+            $container.appendChild(this.endMark);
         }
         StationMark.prototype.show = function (isStart, point) {
-            var shift = {
-                x: -25 / 2,
-                y: -40
-            };
             if (isStart) {
+                this.startMarkOrigin = point;
                 this.startMark.style.display = 'block';
-                this.startMark.style.left = point.x + shift.x + 'px';
-                this.startMark.style.top = point.y + shift.y + 'px';
             }
             else {
+                this.endMarkOrigin = point;
                 this.endMark.style.display = 'block';
-                this.endMark.style.left = point.x + shift.x + 'px';
-                this.endMark.style.top = point.y + shift.y + 'px';
             }
+            this.updatePosition();
         };
         StationMark.prototype.hide = function () {
             this.startMark.style.display = 'none';
             this.endMark.style.display = 'none';
+        };
+        StationMark.prototype.updatePosition = function () {
+            var shift = {
+                x: -25 / 2,
+                y: -40
+            };
+            if (this.startMarkOrigin) {
+                var convertStartPoint = draw_3.Draw.pointInViewBox({
+                    x: this.startMarkOrigin.x,
+                    y: this.startMarkOrigin.y
+                });
+                this.startMark.style.left = convertStartPoint.x + shift.x + 'px';
+                this.startMark.style.top = convertStartPoint.y + shift.y + 'px';
+            }
+            if (this.endMarkOrigin) {
+                var convertEndPoint = draw_3.Draw.pointInViewBox({
+                    x: this.endMarkOrigin.x,
+                    y: this.endMarkOrigin.y
+                });
+                this.endMark.style.left = convertEndPoint.x + shift.x + 'px';
+                this.endMark.style.top = convertEndPoint.y + shift.y + 'px';
+            }
         };
         return StationMark;
     }());
@@ -3415,7 +3506,6 @@ define("stationManager", ["require", "exports", "selectTips", "stationMark", "st
                         'endStationCode': self.endStation.id,
                         'Price': result.content.Price
                     });
-                    console.log(messag);
                     if (window['MainActivity']) {
                         window['MainActivity'].pushTheTicketInfo(messag);
                     }
@@ -3441,7 +3531,7 @@ define("stationManager", ["require", "exports", "selectTips", "stationMark", "st
     }());
     exports.StationManager = StationManager;
 });
-define("lineManager", ["require", "exports", "line", "stationManager", "draw"], function (require, exports, line_1, stationManager_1, draw_2) {
+define("lineManager", ["require", "exports", "line", "stationManager", "draw"], function (require, exports, line_1, stationManager_1, draw_4) {
     "use strict";
     var LineManager = (function () {
         function LineManager(infoData) {
@@ -3457,7 +3547,7 @@ define("lineManager", ["require", "exports", "line", "stationManager", "draw"], 
             }
             this.stationManager = new stationManager_1.StationManager(infoData.stations);
             this.updateInterface();
-            this.maskLayer = draw_2.Draw.canvas.rect(0, 0, draw_2.Draw.canvas.width, draw_2.Draw.canvas.height);
+            this.maskLayer = draw_4.Draw.canvas.rect(0, 0, draw_4.Draw.size.width, draw_4.Draw.size.height);
             this.maskLayer.attr({
                 fill: '#fff',
                 opacity: '0.8'
@@ -3530,7 +3620,135 @@ define("lineManager", ["require", "exports", "line", "stationManager", "draw"], 
     }());
     exports.LineManager = LineManager;
 });
-define("main", ["require", "exports", "draw", "lineManager", "stationMark"], function (require, exports, draw_3, lineManager_1, stationMark_2) {
+define("touch", ["require", "exports", "draw", "selectTips", "stationMark"], function (require, exports, draw_5, selectTips_2, stationMark_2) {
+    "use strict";
+    var TouchControl = (function () {
+        function TouchControl(container, layer) {
+            this.windowSize = {
+                width: window.innerWidth,
+                height: window.innerHeight
+            };
+            this.didMove = false;
+            var self = this;
+            container.addEventListener('touchstart', function (e) {
+                self.touchStart(e);
+            });
+            container.addEventListener('touchmove', function (e) {
+                e.preventDefault();
+                self.touchMove(e);
+            });
+            container.addEventListener('touchend', function (e) {
+                self.touchEnd(e);
+            });
+            this.$container = container;
+            this.canvas = layer;
+            draw_5.Draw.scale({ x: 0, y: 0 }, 0.1);
+        }
+        TouchControl.prototype.touchStart = function (event) {
+            this.startEvent = event;
+            this.touchCount = event.touches.length;
+        };
+        TouchControl.prototype.touchMove = function (event) {
+            if (this.touchCount != event.touches.length) {
+                return;
+            }
+            event.stopPropagation();
+            this.didMove = true;
+            if (event.touches.length == 1) {
+                var offset = this.getOffset(this.startEvent.touches[0], event.touches[0]);
+                this.moveContainer(offset.pageX, offset.pageY);
+            }
+            else {
+                var center = this.getCenter(event.touches);
+                var scale = this.getScale(this.startEvent.touches, event.touches);
+                this.scaleContainer(center, scale);
+            }
+            this.lastEvent = event;
+        };
+        TouchControl.prototype.touchEnd = function (event) {
+            if (event.touches.length != 0 || !this.didMove) {
+                return;
+            }
+            event.stopPropagation();
+            this.didMove = false;
+            if (this.lastEvent.touches.length == 1) {
+                var offset = this.getOffset(this.startEvent.touches[0], this.lastEvent.touches[0]);
+                this.moveCanvas(offset.pageX, offset.pageY);
+            }
+            else {
+                var center = this.getCenter(this.lastEvent.touches);
+                var scale = this.getScale(this.startEvent.touches, this.lastEvent.touches);
+                this.scaleCanvas(center, scale);
+            }
+            this.resetContainer();
+            selectTips_2.selectTips.updatePosition();
+            stationMark_2.stationMark.updatePosition();
+        };
+        TouchControl.prototype.moveContainer = function (x, y) {
+            this.$container.style.transform = this.getTransformMatrix(x, y);
+        };
+        TouchControl.prototype.scaleContainer = function (origin, scale) {
+            this.$container.style.transform = this.getTransformMatrix(0, 0, scale);
+            this.$container.style.transformOrigin = origin.x + "px " + origin.y + "px";
+        };
+        TouchControl.prototype.resetContainer = function () {
+            this.$container.style.transform = this.getTransformMatrix(0, 0, 1);
+        };
+        TouchControl.prototype.moveCanvas = function (x, y) {
+            draw_5.Draw.move(x, y);
+        };
+        TouchControl.prototype.scaleCanvas = function (origin, scale) {
+            // let originScale =  this.canvas.scale()
+            // this.canvas.scale({
+            // 	x : scale * originScale.x,
+            // 	y : scale * originScale.y
+            // });
+            // this.redirect(origin);
+            return draw_5.Draw.scale(origin, scale);
+        };
+        TouchControl.prototype.getTransformMatrix = function (x, y, scale) {
+            if (!scale) {
+                scale = 1;
+            }
+            var s = [scale, 0, 0, scale, x, y];
+            return "matrix(" + s.join(",") + ")";
+        };
+        TouchControl.prototype.getTransformMatrixTranslate = function (matrix) {
+            // matrix.match(//)
+        };
+        TouchControl.prototype.getCenter = function (list) {
+            for (var e = [], n = [], r = 0, i = list.length; i > r; r++) {
+                e.push(list[r].pageX);
+                n.push(list[r].pageY);
+            }
+            return {
+                x: (Math.min.apply(Math, e) + Math.max.apply(Math, e)) / 2,
+                y: (Math.min.apply(Math, n) + Math.max.apply(Math, n)) / 2
+            };
+        };
+        TouchControl.prototype.getOffset = function (start, end) {
+            return {
+                pageX: end.pageX - start.pageX,
+                pageY: end.pageY - start.pageY
+            };
+        };
+        TouchControl.prototype.getDistance = function (start, end) {
+            var n = end.pageX - start.pageX, r = end.pageY - start.pageY;
+            return Math.sqrt(n * n + r * r);
+        };
+        TouchControl.prototype.getScale = function (startList, endList) {
+            if (startList.length >= 2 && endList.length >= 2) {
+                return this.getDistance(endList[0], endList[1]) / this.getDistance(startList[0], startList[1]);
+            }
+            else {
+                return 1;
+            }
+        };
+        return TouchControl;
+    }());
+    exports.TouchControl = TouchControl;
+});
+define("main", ["require", "exports", "draw", "lineManager", "stationMark", "touch"], function (require, exports, draw_6, lineManager_1, stationMark_3, touch_1) {
     "use strict";
     /*
     http://182.254.154.16:808/Goods/GetLineStations
@@ -3573,9 +3791,15 @@ define("main", ["require", "exports", "draw", "lineManager", "stationMark"], fun
             try {
                 var info = JSON.parse(this.response);
                 var MinSize = getMinWidthHeight(info.content);
-                var canvas = Raphael('container', MinSize.width, MinSize.height);
-                draw_3.Draw.canvas = canvas;
+                var canvas = Raphael('container', window.innerWidth, window.innerHeight);
+                draw_6.Draw.canvas = canvas;
+                draw_6.Draw.size = {
+                    width: MinSize.width,
+                    height: MinSize.height
+                };
                 var lineManager = new lineManager_1.LineManager(info.content);
+                var $container = document.getElementById('container');
+                var touchControl = new touch_1.TouchControl($container, canvas);
             }
             catch (e) {
             }
@@ -3586,6 +3810,6 @@ define("main", ["require", "exports", "draw", "lineManager", "stationMark"], fun
     xhr.setRequestHeader('Accept', 'application/json');
     xhr.send("Citycde=021");
     window['CLEAR_MAP_INFO'] = function () {
-        stationMark_2.stationMark.hide();
+        stationMark_3.stationMark.hide();
     };
 });

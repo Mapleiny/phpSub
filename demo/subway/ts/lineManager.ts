@@ -22,7 +22,7 @@ export class LineManager{
 		this.updateInterface();
 
 
-		this.maskLayer = Draw.canvas.rect(0,0,Draw.canvas.width,Draw.canvas.height);
+		this.maskLayer = Draw.canvas.rect(0,0,Draw.size.width,Draw.size.height);
 		this.maskLayer.attr({
 			fill : '#fff',
 			opacity : '0.8'
