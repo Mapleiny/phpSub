@@ -1,4 +1,4 @@
-<?
+<?php
 function runDBQuery ($query){
 	if (!$query) {
 		return null;
