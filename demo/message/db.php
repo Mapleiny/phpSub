@@ -3,7 +3,7 @@ function runDBQuery ($query){
 	if (!$query) {
 		return null;
 	}
-	$con = mysql_connect("localhost","root","maple1105");
+	$con = mysql_connect("127.0.0.1","root","maple1105");
 	$result = null;
 	if (!$con){
 		die('Could not connect: '.mysql_error());
