@@ -22,7 +22,7 @@ while($row = mysqli_fetch_array($result)){
 	<title>Message</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
 	<meta name="apple-mobile-web-app-capable" content="yes">
-	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+	<meta name="apple-mobile-web-app-status-bar-style" content="default">
 	<style type="text/css">
 		html,body,h1,h2{
 			padding: 0;
@@ -31,7 +31,7 @@ while($row = mysqli_fetch_array($result)){
 		header{
 			position: fixed;
 			width: 100%;
-			padding: 10px 0;
+			padding: 10px 0 10px;
 			background: white;
 			border-bottom: solid 1px #ccc;
 		}
