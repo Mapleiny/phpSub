@@ -3,15 +3,14 @@ function runDBQuery ($query){
 	if (!$query) {
 		return null;
 	}
-	$con = mysql_connect("127.0.0.1","root","maple1105");
+	$con = mysqli_connect("127.0.0.1","root","maple1105","sms");
 	$result = null;
 	if (!$con){
-		die('Could not connect: '.mysql_error());
+		die('Could not connect: '.mysqli_connect_error());
 	}else{
-		mysql_select_db('sms',$con);
-		$result = mysql_query($query);
+		$result = mysqli_query($con,$query);
 	}
-	mysql_close($con);
+	mysqli_close($con);
 
 	return $result;
 }
