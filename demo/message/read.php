@@ -3,7 +3,7 @@ include './db.php';
 
 $result = runDBQuery('SELECT * FROM `message` ORDER BY `date` DESC LIMIT 10');
 $emparray = array();
-while($row = mysql_fetch_array($result)){
+while($row = mysqli_fetch_array($result)){
 	$emparray[] = array(
 		'content' => $row['content'],
 		'date' => $row['date'],
