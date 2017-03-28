@@ -1,4 +1,4 @@
-<?
+<?php
 include './db.php';
 
 $result = runDBQuery('SELECT * FROM `message` ORDER BY `date` DESC LIMIT 10');
