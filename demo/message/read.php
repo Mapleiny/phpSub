@@ -21,6 +21,8 @@ while($row = mysqli_fetch_array($result)){
 	<meta charset="UTF-8">
 	<title>Message</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 	<style type="text/css">
 		html,body,h1,h2{
 			padding: 0;
