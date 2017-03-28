@@ -11,12 +11,8 @@ if (!$content) {
 }
 $timestamp = $_POST['date'];
 if (!$timestamp) {
-	$timestamp = time();
+	$timestamp = time()."000";
 }
-
-error_log("INSERT INTO message (fromAddress,content,date) VALUES ('$from','$content','$timestamp')");
-
 $result = runDBQuery("INSERT INTO message (fromAddress,content,date) VALUES ('$from','$content','$timestamp')");
-error_log("db result:$result");
 echo $result;
 ?>
