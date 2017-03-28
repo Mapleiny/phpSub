@@ -73,7 +73,7 @@ var prefixZero = function(num){
 
 var timeFormat = function(date){
 	let current = new Date();
-	let shift = (current.getTime() - date.getTime())/1000;
+	let shift = Math.round((current.getTime() - date.getTime())/1000);
 	let isSameDate = current.getDate() == date.getDate();
 	let isSameYear = current.getFullYear() == date.getFullYear();
 	var returnString;
