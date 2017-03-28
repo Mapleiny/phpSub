@@ -81,7 +81,7 @@ var timeFormat = function(date){
 	if (shift < 60) {
 		returnString = shift+'秒钟前';
 	}else if( shift < 3600 ){
-		returnString = shift+'分钟前';
+		returnString = Math.round(shift/60)+'分钟前';
 	}else if( shift < 86400 ){
 		returnString = prefixZero(date.getHours())+':'+prefixZero(date.getMinutes());
 		if (!isSameDate) {
