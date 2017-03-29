@@ -10,8 +10,11 @@ while($row = mysqli_fetch_array($result)){
 		'fromAddress' => $row['fromAddress'],
 	);
 }
-
-
+$contentType = $_SERVER["CONTENT_TYPE"];
+if ($contentType == "application/json") {
+	echo json_encode($emparray);
+	return ;
+}
 ?>
 
 
