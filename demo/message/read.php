@@ -12,7 +12,11 @@ while($row = mysqli_fetch_array($result)){
 }
 $contentType = $_SERVER["CONTENT_TYPE"];
 if ($contentType == "application/json") {
-	echo json_encode($emparray);
+	echo json_encode(array(
+		"code" => 0,
+		"message" => "ok",
+		"data" => $emparray
+		));
 	return ;
 }
 ?>
