@@ -6,7 +6,7 @@ $emparray = array();
 while($row = mysqli_fetch_array($result)){
 	$emparray[] = array(
 		'content' => $row['content'],
-		'date' => $row['date'],
+		'date' => substr($row['date'], 0, -3),
 		'fromAddress' => $row['fromAddress'],
 	);
 }
