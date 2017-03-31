@@ -5,7 +5,7 @@ include './config.php';
 class PushServer{
     private $deviceToken;
     function __construct( $deviceToken ){
-        this.$deviceToken = $deviceToken
+        $this->deviceToken = $deviceToken;
     }
 
     function sendMessage($title,$content){
@@ -18,20 +18,26 @@ class PushServer{
         $fp = stream_socket_client('ssl://gateway.sandbox.push.apple.com:2195', $err,$errstr, 60, STREAM_CLIENT_CONNECT|STREAM_CLIENT_PERSISTENT, $ctx);
 
         if ($fp){
-            $body = this.createPayload();
+            $body = $this->createPayload($title,$content);
             $payload = json_encode($body);
             // Build the binary notification
-            $msg = chr(0) . pack('n', 32) . pack('H*', $deviceToken) . pack('n', strlen($payload)) . $payload;
+            $msg = chr(0) . pack('n', 32) . pack('H*', $this->deviceToken) . pack('n', strlen($payload)) . $payload;
             $result = fwrite($fp, $msg, strlen($msg));
-
             fclose($fp);
         }else{
-            
         }
 
     }
 
-    function createPayload(){
+    function createPayload($title,$content){
+        if (!$content) {
+            $message = $title;
+        }else{
+            $message = array(
+                "title" => $title,
+                "body" => $content
+                );
+        }
         return array(
             'aps' => array(
                     'alert' => $message,
