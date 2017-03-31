@@ -1,3 +1,3 @@
 <?
-$passphrase = 'maple1105';
+$passphrase = '';
 ?>
