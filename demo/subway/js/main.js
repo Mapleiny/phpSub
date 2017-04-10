@@ -3625,8 +3625,8 @@ define("touch", ["require", "exports", "draw", "selectTips", "stationMark"], fun
     var TouchControl = (function () {
         function TouchControl(container, layer) {
             this.windowSize = {
-                width: window.innerWidth,
-                height: window.innerHeight
+                width: Math.max(window.innerHeight, window.innerWidth),
+                height: Math.min(window.innerHeight, window.innerWidth)
             };
             this.didMove = false;
             var self = this;
