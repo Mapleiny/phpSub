@@ -9,8 +9,8 @@ export class TouchControl{
 	private canvas:Raphael.Paper;
 	private lastEvent:TouchEvent;
 	private windowSize = {
-		width : window.innerWidth,
-		height : window.innerHeight
+		width : Math.max(window.innerHeight,window.innerWidth),
+		height : Math.min(window.innerHeight,window.innerWidth)
 	};
 
 	private touchCount:number;
